@@ -1,0 +1,8 @@
+/datasets/*
+**/__pycache__
+**/.idea
+**/.vscode
+**/.DS_Store
+/wikipedia_ner/*
+
+
