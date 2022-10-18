@@ -21,7 +21,6 @@ def check_and_return_inputs():
         except ValueError:
             print("Error: the third argument must be an integer number")
             return None
-        fgv
 
         return [input_path, output_path, entries]
 
