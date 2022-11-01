@@ -1,12 +1,12 @@
-# usage: main.py <input file> <output file> [num entries]
+# usage: csv_main.py <input file> <output file> [num entries]
 import sys
 from preprocesser import top_N_NEs
 
 
-def check_and_return_inputs():
+def check_and_return_csv_inputs():
     # (3rd argument - [num entries] - is optional)
     if len(sys.argv) != 3 and len(sys.argv) != 4:
-        print("Usage: main.py <input file> <output file> [num entries]")
+        print("Usage: csv_main.py <input file> <output file> [num entries]")
         return None
 
     input_path = sys.argv[1]
@@ -27,7 +27,7 @@ def check_and_return_inputs():
 
 if __name__ == '__main__':
     # check and retrieve input parameters values: input file path, output file path (, number of entries)
-    inputs = check_and_return_inputs()
+    inputs = check_and_return_csv_inputs()
     if inputs is None:  # input error
         exit()
 

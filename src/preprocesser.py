@@ -8,6 +8,8 @@ props     = "props=labels"
 languages = "languages=en"
 jformat   = "format=json"
 
+# * task1 *
+
 
 def top_N_NEs(input_csv_ranking_file_path, output_csv_file_path, top_N=1000):
     # 1 - open input file and output file
@@ -57,3 +59,47 @@ def create_labeled_csv(input_file, output_file, num_entries):
 def get_json_entity(entity_id):
     response = urlopen(f"https://{wiki_url}?{action}&{props}&ids={entity_id}&{languages}&{jformat}")
     return response.read()
+
+
+# * task3 *
+
+
+def top_N_NEs_strings(input_csv_ranking_file_path, top_N=1000):
+    try:
+        input_file = open(input_csv_ranking_file_path, 'r')
+    except OSError:
+        print("Error: specify a proper input file path")
+        return False
+
+    top_NEs = get_top_NEs_list(input_file, top_N)
+
+    input_file.close();
+    return top_NEs
+
+
+def get_top_NEs_list(input_file, num_entries):
+    output_list = list()
+    input_file.readline();  # skip header line
+
+    # Read input file and for each line extract attributes and do a http request
+    #       -> save result in the output list
+    # (stop until the provided num of entries is reached)
+
+    for i in range(num_entries):
+        curr_line = input_file.readline().strip()
+        entity_id = curr_line.split(sep=",")[0]     # retrieve the Qxxxx id
+
+        json_entity = get_json_entity(entity_id)    # do HTTP request to get the json representation
+        entity = json.loads(json_entity)            # deserialize json string into dict
+        entity_label = entity["entities"][entity_id]["labels"]["en"]["value"]
+
+        # save the new entity_label in the output list
+        output_list.append(entity_label)
+
+        print_percentage(i+1, num_entries)
+
+    print()  # newline
+    return output_list
+
+
+
