@@ -1,6 +1,11 @@
 # usage: csv_main.py <input file> <output file> [num entries]
 import sys
-from preprocesser import top_N_NEs
+from src.model.preprocesser import top_N_NEs
+
+"""
+This main file runs a program capable of processing a csv input (NERs IDs)
+and writes the output (tagged NERs) in another *csv file* 
+"""
 
 
 def check_and_return_csv_inputs():

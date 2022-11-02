@@ -1,6 +1,11 @@
 import sys
 
-from src.preprocesser import top_N_NEs_strings
+from src.model.preprocesser import top_N_NEs_strings
+
+"""
+This main file runs a program capable of processing a csv input (NERs IDs)
+and prints the output (tagged NERs) on the *console* (stdout)
+"""
 
 
 def check_and_return_inputs():
@@ -39,4 +44,7 @@ if __name__ == '__main__':
         input_file_path, num_entries = inputs
         NEs = top_N_NEs_strings(input_file_path, num_entries)
 
+
+    # print results on stdout: one entity per line
+    print()  # newline
     print('\n'.join(NEs))
