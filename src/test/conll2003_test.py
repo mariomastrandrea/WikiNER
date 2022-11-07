@@ -98,7 +98,7 @@ if __name__ == "__main__":
     # ---------------------------------------------------
 
     # retrieve Named Entities list
-    _NEs_filepath = "../../output/test10000.csv"
+    _NEs_filepath = "../../output/test1000_w_aliases.csv"
     _NEs_list = get_NEs_from_file(_NEs_filepath)
 
     output = test_on_CONLL(_sentences_tokens, _sentences_tags, _NEs_list)

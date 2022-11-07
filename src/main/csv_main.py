@@ -39,6 +39,7 @@ if __name__ == '__main__':
         exit()
 
     # now compute the top N Named Entities from input csv and write them to output csv
+    return_also_aliases = True  # ***
 
     # measure elapsed time: start
     eff_start_time = time.process_time()
@@ -47,11 +48,11 @@ if __name__ == '__main__':
     # no num_entries specified (use default one)
     if len(inputs) == 2:
         input_file_path, output_file_path = inputs
-        top_N_NEs(input_file_path, output_file_path)
+        top_N_NEs(input_file_path, output_file_path, return_also_aliases)
     # user specified num_entries
     elif len(inputs) == 3:
         input_file_path, output_file_path, num_entries = inputs
-        top_N_NEs(input_file_path, output_file_path, num_entries)
+        top_N_NEs(input_file_path, output_file_path, num_entries, return_also_aliases)
 
     # measure elapsed time: end
     eff_end_time = time.process_time()
