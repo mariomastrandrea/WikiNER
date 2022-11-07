@@ -1,19 +1,18 @@
+from nltk.tokenize import word_tokenize
 
-def brutal_force_NER(sentence, NE_list, scheme="BIO"):
+
+def brutal_force_NER(sentence_tokens, NE_list, tokenizer, scheme="BIO"):
     """
     Tag a specified sentence using the provided list of NEs, following a certain tag scheme and
     using a brute-force approach
-    :param sentence: the sentence string to be tagged -> it will be split in tokens
+    :param sentence_tokens: the sentence tokens that have be tagged
     :param NE_list: list of NEs strings used to tag the sentence tokens
+    :param tokenizer: the same tokenizer* object used to tokenize the sentence;
+    it has to have a .tokenize(str) method capable of tokenize a string
     :param scheme: tag scheme to be used for tagging (default: "BIO")
     :return: the list of tags related to the provided sentence, one tag per each token
+    *the tokenizer is necessary to tokenize the Named Entities accordingly with the sentence tokens
     """
-    # create the tokenizer object to split the sentence and the NEs in tokens
-    tokenizer = Tokenizer()
-
-    # split the sentence in tokens
-    sentence_tokens = tokenizer.tokenize(sentence)
-
     # find all the requested matches
     matches = find_not_overlapping_matches(sentence_tokens, NE_list, tokenizer)
 
@@ -33,7 +32,8 @@ def find_not_overlapping_matches(sentence_tokens, NE_list, tokenizer):
     Find all the not overlapping matches of the provided Named Entities against the provided sentence
     :param sentence_tokens: list of strings representing the sentence's tokens
     :param NE_list: list of strings representing the Named Entities
-    :param tokenizer: object used to tokenize the sentence, and the one which will be used to tokenize also the NEs
+    :param tokenizer: the same object used to tokenize the sentence,
+    and the one which will be used to tokenize also the NEs. It has to have a .tokenize(str) method
     :return: set of not overlapping matches (a match is a dict like: {"start":x, "end":y})
     """
 
@@ -133,7 +133,7 @@ class Tokenizer:
         :return: list of strings, one for each token
         """
         # todo: improve the tokenization with a tokenizer from a lib
-        return sentence.split()
+        return word_tokenize(sentence)
 
 
 class Match:
@@ -216,6 +216,9 @@ def represent_BILOU_tags(sentence_tokens, matches):
     return tags
 
 
+# * rapid test *
+
+
 def format_tags(tags, sentence):
     sentence_tokens = Tokenizer().tokenize(sentence)
     result = []
@@ -227,15 +230,13 @@ def format_tags(tags, sentence):
     return " ".join(result)
 
 
-# * rapid test *
-
-
 if __name__ == "__main__":
     _NE_list = ["Microsoft", "Iowa State", "Fall 2022", "Deep Learning", "Iowa State University", "2022", "school"]
     _sentence = "I went to school at Iowa State University in Fall 2022"
+    _tokenizer = Tokenizer()
 
-    BIO_tags   = brutal_force_NER(_sentence, _NE_list, scheme="BIO")
-    BILOU_tags = brutal_force_NER(_sentence, _NE_list, scheme="BILOU")
+    BIO_tags   = brutal_force_NER(_tokenizer.tokenize(_sentence), _NE_list, _tokenizer, scheme="BIO")
+    BILOU_tags = brutal_force_NER(_tokenizer.tokenize(_sentence), _NE_list, _tokenizer, scheme="BILOU")
 
     # print results
     BIO_formatted_tags = format_tags(BIO_tags, _sentence)

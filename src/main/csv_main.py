@@ -1,6 +1,8 @@
 # usage: csv_main.py <input file> <output file> [num entries]
 import sys
-from src.model.preprocesser import top_N_NEs
+import time
+
+from src.model.preprocesser import top_N_NEs, save_all_NEs
 
 """
 This main file runs a program capable of processing a csv input (NERs IDs)
@@ -38,6 +40,10 @@ if __name__ == '__main__':
 
     # now compute the top N Named Entities from input csv and write them to output csv
 
+    # measure elapsed time: start
+    eff_start_time = time.process_time()
+    start_time = time.time()
+
     # no num_entries specified (use default one)
     if len(inputs) == 2:
         input_file_path, output_file_path = inputs
@@ -46,3 +52,42 @@ if __name__ == '__main__':
     elif len(inputs) == 3:
         input_file_path, output_file_path, num_entries = inputs
         top_N_NEs(input_file_path, output_file_path, num_entries)
+
+    # measure elapsed time: end
+    eff_end_time = time.process_time()
+    end_time = time.time()
+
+    eff_elapsed_time = eff_end_time - eff_start_time
+    elapsed_time = end_time - start_time
+
+    print(f"Effective elapsed time: {int(eff_elapsed_time)} seconds")
+    print(f"Elapsed time: {int(elapsed_time)} seconds")
+
+
+
+"""
+main function for computing all the NEs - unfeasible (???) 
+
+def check_and_return_csv_inputs_for_all_NEs():
+    if len(sys.argv) != 3:
+        print("Usage: csv_main.py <input file> <output file>")
+        return None
+
+    input_path = sys.argv[1]
+    output_path = sys.argv[2]
+
+    return [input_path, output_path]
+
+
+
+if __name__ == '__main__':
+    # check and retrieve input parameters values: input file path, output file path
+    inputs = check_and_return_csv_inputs_for_all_NEs()
+    if inputs is None:  # input error
+        exit()
+
+    # now take *all* the Named Entities from input csv and write them to output csv
+
+    input_file_path, output_file_path = inputs
+    save_all_NEs(input_file_path, output_file_path)
+"""

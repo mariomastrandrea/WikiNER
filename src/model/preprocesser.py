@@ -1,6 +1,6 @@
 import json
 from urllib.request import urlopen
-from src.utilities import print_percentage, csv_escape, print_line, open_files
+from src.utilities import print_percentage, csv_escape, print_line, open_files, print_count
 
 """
 This file contains the main functions for processing input NEs IDs, labelling them and 
@@ -60,13 +60,22 @@ def create_labeled_csv(input_file, output_file, num_entries):
     #       -> save result in the output file line by line
     # (stop until the provided num of entries is reached)
 
+    skipped_entities = []
+
     for i in range(num_entries):
         curr_line = input_file.readline().strip()
         entity_id = curr_line.split(sep=",")[0]     # retrieve the Qxxxx id
         rank = curr_line.split(sep=",")[1]          # retrieve the entity rank
 
         json_entity = get_json_entity(entity_id)    # do HTTP request to get the json representation object
-        entity_label = json_entity["entities"][entity_id]["labels"]["en"]["value"]
+        labels = json_entity["entities"][entity_id]["labels"]
+
+        # skip entities without 'en' label
+        if "en" not in labels:
+            skipped_entities.append(i)
+            continue
+
+        entity_label = labels["en"]["value"]
 
         # write the new labeled line on the output file
         new_labeled_line = print_line(i+1, entity_id, rank, csv_escape(entity_label))
@@ -74,7 +83,8 @@ def create_labeled_csv(input_file, output_file, num_entries):
 
         print_percentage(i+1, num_entries)
 
-    print()     # newline
+    print("\nSkipped entities:")     # newline
+    print(str(x) for x in skipped_entities)
     return
 
 
@@ -145,4 +155,89 @@ def get_top_NEs_list(input_file, num_entries):
     return output_list
 
 
+# * label ALL the NEs - unfeasible (???) *
+
+def save_all_NEs(input_csv_ranking_file_path, output_csv_file_path):
+    """
+    Label *all* the NEs in the input file, and writes the result in a csv file
+    :param input_csv_ranking_file_path: input csv file containing the NERs IDs. It has to be a table
+                                        with a header, and first column NER ID in the format Qxxxx
+    :param output_csv_file_path: output csv file where to write the result. It will be a table with the same
+                                format of the input file, but with an extra column containing the *label*
+    """
+    # 1 - open input file and output file
+    files = open_files(input_csv_ranking_file_path, output_csv_file_path)
+    if files is None:
+        exit()  # error
+    else:
+        input_file, output_file = files
+
+    # 2 - create output file from input csv
+    create_entire_labeled_csv(input_file, output_file)
+
+    # 3 - release resources
+    input_file.close()
+    output_file.flush()
+    output_file.close()
+
+
+def create_entire_labeled_csv(input_file, output_file):
+    """
+    Internal method - it really labels the input file's content and write the result in the output file
+    :param input_file: *opened* input file's handler
+    :param output_file: *opened* output file's handler
+    """
+    # create the new header line and write it
+    new_header = f"#,{input_file.readline().strip()},Label\n"
+    output_file.write(new_header)
+
+    # Read input file and for each line extract attributes and do a http request
+    #       -> save result in the output file line by line
+
+    for i, line in enumerate(input_file):
+        curr_line = line.strip()
+        entity_id = curr_line.split(sep=",")[0]     # retrieve the Qxxxx id
+        rank = curr_line.split(sep=",")[1]          # retrieve the entity rank
+
+        json_entity = get_json_entity(entity_id)    # do HTTP request to get the json representation object
+        entity_label = json_entity["entities"][entity_id]["labels"]["en"]["value"]
+
+        # write the new labeled line on the output file
+        new_labeled_line = print_line(i+1, entity_id, rank, csv_escape(entity_label))
+        output_file.write(new_labeled_line)
+
+        # print the number of lines (NEs) written so far
+        print_count(i+1)
+
+    print()     # newline
+    return
+
+
+def get_NEs_from_file(input_csv_file):
+    """
+    Upload Named Entities from a csv file, instead of computing them on the fly by means of an API.
+    The csv file must have a header line and the (quoted) label of the NE in the 4th column
+    :param input_csv_file: filepath of the csv file containing the Named Entities
+    :return: a list of strings containing all the Named Entities in the file
+    """
+    try:
+        input_file = open(input_csv_file, 'r')
+    except OSError:
+        print("Error: specify a proper input file path")
+        return None
+
+    output_list = list()
+    input_file.readline()  # skip header line
+
+    # Read input file and for each line extract attributes and do a http request
+    #       -> save result in the output list
+
+    for line in input_file:
+        curr_line = line.strip()
+        entity_label = curr_line.split(sep=",")[3]     # retrieve the label
+
+        # save the new entity_label in the output list
+        output_list.append(entity_label[1:-1])
+
+    return output_list
 
