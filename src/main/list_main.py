@@ -1,5 +1,6 @@
-import sys
+# usage: list_main.py <input file> [num entities]
 
+import sys
 from src.model.preprocesser import top_N_NEs_strings
 
 """

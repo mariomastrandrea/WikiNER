@@ -1,8 +1,9 @@
 # usage: csv_main.py <input file> <output file> [num entries]
+
 import sys
 import time
 
-from src.model.preprocesser import top_N_NEs, save_all_NEs
+from src.model.preprocesser import top_N_NEs
 
 """
 This main file runs a program capable of processing a csv input (NERs IDs)

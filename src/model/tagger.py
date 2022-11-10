@@ -1,4 +1,7 @@
+import datasets
 from nltk.tokenize import word_tokenize
+
+from src.model.preprocesser import get_NEs_from_file
 
 
 def brutal_force_NER(sentence_tokens, NE_list, tokenizer, scheme="BIO"):
@@ -37,7 +40,7 @@ def find_not_overlapping_matches(sentence_tokens, NE_list, tokenizer):
     :return: set of not overlapping matches (a match is a dict like: {"start":x, "end":y})
     """
 
-    matches = set()     # set where to store all the matches between a NE and the sentence's tokens
+    matches = set()  # set where to store all the matches between a NE and the sentence's tokens
     # (a match is a dict like: { "start": x, "end": y }
     #   - x is the starting index in the sentence's tokens
     #   - y is the (exclusive) ending index in the sentence's tokens (y token is not included in the match)
@@ -113,11 +116,11 @@ def find_matches_of(entity_tokens, sentence_tokens):
 
     # loop over the sentence tokens, and search for the entity tokens
     for i in range(len(sentence_tokens) - entity_len + 1):
-        if entity_tokens == sentence_tokens[i:i+entity_len]:
+        if entity_tokens == sentence_tokens[i:i + entity_len]:
             # there is a match !
             new_match = Match(
                 start=i,
-                end=i+entity_len
+                end=i + entity_len
             )
             # save the match
             matches.append(new_match)
@@ -152,6 +155,7 @@ class Match:
 
     def __getitem__(self, item):
         return self.__dict__[item]
+
 
 # * tag schemes functions *
 
@@ -211,7 +215,7 @@ def represent_BILOU_tags(sentence_tokens, matches):
 
         for x in range(match["start"], match["end"]):
             # tag the start token with "B", the last with "L", and the rest with "I"
-            tags[x] = "B" if x == match["start"] else "L" if x == match["end"]-1 else "I"
+            tags[x] = "B" if x == match["start"] else "L" if x == match["end"] - 1 else "I"
 
     return tags
 
@@ -224,23 +228,41 @@ def format_tags(tags, sentence):
     result = []
 
     for token, tag in zip(sentence_tokens, tags):
-        formatted_tag = tag + (" "*(len(token)-1))
+        formatted_tag = tag + (" " * (len(token) - 1))
         result.append(formatted_tag)
 
     return " ".join(result)
 
 
 if __name__ == "__main__":
+    """
     _NE_list = ["Microsoft", "Iowa State", "Fall 2022", "Deep Learning", "Iowa State University", "2022", "school"]
     _sentence = "I went to school at Iowa State University in Fall 2022"
+    
     _tokenizer = Tokenizer()
 
-    BIO_tags   = brutal_force_NER(_tokenizer.tokenize(_sentence), _NE_list, _tokenizer, scheme="BIO")
+    BIO_tags = brutal_force_NER(_tokenizer.tokenize(_sentence), _NE_list, _tokenizer, scheme="BIO")
     BILOU_tags = brutal_force_NER(_tokenizer.tokenize(_sentence), _NE_list, _tokenizer, scheme="BILOU")
 
     # print results
     BIO_formatted_tags = format_tags(BIO_tags, _sentence)
     BILOU_formatted_tags = format_tags(BILOU_tags, _sentence)
     print(f"{_NE_list}\n\n{_sentence}\n{BIO_formatted_tags}\n{BILOU_formatted_tags}")
+    """
 
+    dataset = datasets.load_dataset("conll2003", split="train")
+    _NE_list = get_NEs_from_file("../../NEs_output/test10000_w_aliases.csv")
+    _sentence_tokens = dataset[0]["tokens"]
+    _tokenizer = Tokenizer()
 
+    BIO_tags = brutal_force_NER(_sentence_tokens, _NE_list, _tokenizer, scheme="BIO")
+
+    BIO_formatted_tags = []
+
+    for token, tag in zip(_sentence_tokens, BIO_tags):
+        formatted_tag = tag + (" " * (len(token) - 1))
+        BIO_formatted_tags.append(formatted_tag)
+
+    _sentence_ = " ".join(_sentence_tokens)
+    _tags_ = " ".join(BIO_formatted_tags)
+    print(f"{_NE_list}\n\n{_sentence_}\n{_tags_}")
