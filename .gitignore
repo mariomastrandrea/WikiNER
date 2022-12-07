@@ -3,6 +3,6 @@
 **/.idea
 **/.vscode
 **/.DS_Store
-/wikipedia_ner/*
+/wikipedia_raw_NEs/*
 
 

@@ -49,7 +49,7 @@ if __name__ == '__main__':
     # no num_entries specified (use default one)
     if len(inputs) == 2:
         input_file_path, output_file_path = inputs
-        top_N_NEs(input_file_path, output_file_path, return_also_aliases)
+        top_N_NEs(input_file_path, output_file_path, aliases=return_also_aliases)
     # user specified num_entries
     elif len(inputs) == 3:
         input_file_path, output_file_path, num_entries = inputs
@@ -65,31 +65,3 @@ if __name__ == '__main__':
     print(f"Effective elapsed time: {int(eff_elapsed_time)} seconds")
     print(f"Elapsed time: {int(elapsed_time)} seconds")
 
-
-
-"""
-main function for computing all the NEs - unfeasible (???) 
-
-def check_and_return_csv_inputs_for_all_NEs():
-    if len(sys.argv) != 3:
-        print("Usage: csv_main.py <input file> <output file>")
-        return None
-
-    input_path = sys.argv[1]
-    output_path = sys.argv[2]
-
-    return [input_path, output_path]
-
-
-
-if __name__ == '__main__':
-    # check and retrieve input parameters values: input file path, output file path
-    inputs = check_and_return_csv_inputs_for_all_NEs()
-    if inputs is None:  # input error
-        exit()
-
-    # now take *all* the Named Entities from input csv and write them to output csv
-
-    input_file_path, output_file_path = inputs
-    save_all_NEs(input_file_path, output_file_path)
-"""

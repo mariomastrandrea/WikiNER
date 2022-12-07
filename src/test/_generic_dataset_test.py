@@ -1,6 +1,5 @@
 from src.model.tagger import brutal_force_NER
 from seqeval.metrics import classification_report
-from seqeval.scheme import IOB1, IOB2
 
 from src.utilities import print_percentage
 
@@ -20,8 +19,8 @@ def test_on_tokenized_dataset(
     """
     Test the brute-force tagging over a *tokenized* dataset: tag all the (tokenized) sentences and compare
     the results with the provided dataset tags
-    :param sentences_tokens: list of sentences' token's (each sentence is a list of string tokens)
-    :param ground_truth_tag_sequences: list of provided tags for each sentence. It contains a sequence of
+    :param sentences_tokens: list of sentences' tokens (each sentence is a list of string tokens)
+    :param ground_truth_tag_sequences: list of provided tags for each sentence. It contains a list of
                                         tags for each sentence
     :param NE_list: list of (string) Named Entities used to tag the sentences
     :param tokenizer: the same tokenizer object used to tokenize the sentences. It has a .tokenize(str) method
@@ -30,13 +29,16 @@ def test_on_tokenized_dataset(
     """
     predicted_tag_sequences = []
 
-    # compute the predicted tag sequence for all the sentences and store them in 'predicted_tag_sequences'
+    # compute the predicted tag sequences for all the sentences and store them in 'predicted_tag_sequences'
     for i, sentence_tokens in enumerate(sentences_tokens):
+        # compute tags
         predicted_tag_sequence = brutal_force_NER(sentence_tokens, NE_list, tokenizer, scheme)
+        # save them
         predicted_tag_sequences.append(predicted_tag_sequence)
+        # print loading percentage
         print_percentage(i+1, len(sentences_tokens))
 
-    print()
+    print()     # print new line
 
     # compute the performances: summary of the precision, recall, F1 score for each class
     performance_metrics = classification_report(
@@ -56,7 +58,7 @@ def test_on_dataset(
         scheme="BIO"
 ):
     """
-    Test the brute-force tagging over a dataset: tag all the (string) sentences and compare
+    Test the brute-force tagging over a (not tokenized) dataset: tag all the (string) sentences and compare
     the results with the provided dataset tags
     :param sentences: list of (string) sentences
     :param ground_truth_tag_sequences: list of provided tags for each sentence. It contains a sequence of
@@ -69,7 +71,7 @@ def test_on_dataset(
     """
     predicted_tag_sequences = []
 
-    # compute the predicted tag sequence for all the sentences and store them in 'predicted_tag_sequences'
+    # compute the predicted tag sequences for all the sentences and store them in 'predicted_tag_sequences'
     for sentence in sentences:
         sentence_tokens = tokenizer.tokenize(sentence)
         predicted_tag_sequence = brutal_force_NER(sentence_tokens, NE_list, tokenizer, scheme)
