@@ -17,7 +17,6 @@ def format_tags(tags, sentence):
 
 
 if __name__ == "__main__":
-    """
     # tagging a random sentence using a crafted list of NEs
     
     _NE_list = ["Microsoft", "Iowa State", "Fall 2022", "Deep Learning", "Iowa State University", "2022", "school"]
@@ -37,7 +36,7 @@ if __name__ == "__main__":
     # tagging the first sentence of the conll2003 dataset using a Wikipedia NEs list
     dataset = datasets.load_dataset("conll2003", split="train")
     _NE_list = get_NEs_from_file("../../wiki_NEs/test10000_w_aliases.csv")
-    _sentence_tokens = dataset[0]["tokens"]
+    _sentence_tokens = dataset[3]["tokens"]
     _tokenizer = Tokenizer()
 
     BIO_tags = brutal_force_NER(_sentence_tokens, _NE_list, _tokenizer, scheme="BIO")
@@ -53,4 +52,5 @@ if __name__ == "__main__":
     _NEs = "\n".join(_NE_list)
 
     print(f"\n{_sentence_}\n{_tags_}")
+    """
 

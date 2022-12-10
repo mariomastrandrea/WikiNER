@@ -5,7 +5,7 @@ import sys
 from src.model.NEs_loader import get_NEs_from_file
 from src.model.objects.default_tokenizer import Tokenizer
 from datasets import load_dataset
-from _generic_dataset_test import test_on_tokenized_dataset
+from src.test.generic_dataset_test import test_on_tokenized_dataset
 
 
 def test_on_CONLL(
