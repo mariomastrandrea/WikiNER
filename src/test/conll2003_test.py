@@ -1,6 +1,7 @@
 # usage: conll2003_test.py <input NEs file>
 
 import sys
+from src.model.preprocesser import top_N_NEs_strings
 
 from src.model.NEs_loader import get_NEs_from_file
 from src.model.objects.default_tokenizer import Tokenizer
@@ -62,16 +63,28 @@ def map_row_to_tokens_and_letters_tags(row):
 
 if __name__ == "__main__":
     # input checks
-    if len(sys.argv) != 2:
-        print("Usage: conll2003_test.py <input NEs filepath>")
+    if len(sys.argv) != 4:
+        print("Usage: conll2003_test.py [input NEs filepath] [top N] [true/false]")
         exit()
 
     _NEs_filepath = sys.argv[1]
+    _top_N = int(sys.argv[2])
+    _aliases = True if sys.argv[3] == 'true' else False
+
+    print(f"\n* Running WikiNER with top_N={_top_N} and aliases={_aliases} *")
+
+    """
+    This script was taking the NEs from a precomputed file. 
+    Now it has been modified so that it computes them on the fly, 
+    by means of the original file (in wikipedia_raw_NEs/qrank.csv) and the Wikidata API 
 
     # retrieve Named Entities list from input file
     wiki_NEs_list = get_NEs_from_file(_NEs_filepath)
     if wiki_NEs_list is None:
         exit()
+    """
+
+    wiki_NEs_list = top_N_NEs_strings(_NEs_filepath, _top_N, aliases=_aliases)
 
     _dataset_name = "conll2003"
     _split = "train"
@@ -95,4 +108,8 @@ if __name__ == "__main__":
 
     # * execute brute-force tagging over CoNLL2003 using NEs and measure performances *
     tagging_report = test_on_CONLL(conll2003_sentences_tokens, conll2003_sentences_tags, wiki_NEs_list)
-    print(tagging_report)
+
+    # format result: print just the first 3 lines
+    lines = tagging_report.splitlines(keepends=True)
+    lines[2] = lines[2].replace("_", " ")
+    print(lines[0] + lines[1] + lines[2])

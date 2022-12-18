@@ -191,7 +191,7 @@ def get_top_NEs_list(input_file, num_entries, aliases=False):
                 # save the alias label
                 output_list.append(alias_label)
 
-        print_percentage(i+1, num_entries)
+        print_percentage(i+1, num_entries, "NEs")
 
     print()  # newline
     return output_list

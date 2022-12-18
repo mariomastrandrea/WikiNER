@@ -36,7 +36,7 @@ def test_on_tokenized_dataset(
         # save them
         predicted_tag_sequences.append(predicted_tag_sequence)
         # print loading percentage
-        print_percentage(i+1, len(sentences_tokens))
+        print_percentage(i+1, len(sentences_tokens), "test on CoNLL2003")
 
     print()     # print new line
 

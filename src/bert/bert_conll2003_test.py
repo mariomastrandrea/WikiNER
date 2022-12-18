@@ -1,5 +1,9 @@
-from transformers import BertTokenizerFast, AutoModelForTokenClassification, Trainer, TrainingArguments
+from transformers import AutoTokenizer, AutoModelForTokenClassification, Trainer, TrainingArguments, \
+    DataCollatorForTokenClassification
 from src.test.conll2003_test import get_huggingface_dataset
+import numpy as np
+import evaluate
+
 
 
 def adjust_bert_labels(word_ids, ner_tags):
@@ -26,7 +30,6 @@ def encode_row_and_adjust_tags(row, tokenizer):
     # create new row from the tokens, encoding them in bert integers ids
     new_row = tokenizer(
         row["tokens"],
-        padding="max_length",
         truncation=True,
         is_split_into_words=True
     )
@@ -44,41 +47,64 @@ def encode_dataset(dataset, tokenizer):
     return dataset
 
 
+def compute_metrics(eval_prediction, metric, label_names):
+    logits, labels = eval_prediction
+    predictions = np.argmax(logits, axis=2)
+
+    true_labels = [[label_names[l] for l in label if l != -100] for label in labels]
+    true_predictions = [
+        [label_names[p] for (p, l) in zip(prediction, label) if l != -100]
+        for prediction, label in zip(predictions, labels)
+    ]
+    all_metrics = metric.compute(predictions=true_predictions, references=true_labels)
+    return {
+        "precision": all_metrics["overall_precision"],
+        "recall": all_metrics["overall_recall"],
+        "f1": all_metrics["overall_f1"],
+        "accuracy": all_metrics["overall_accuracy"],
+}
+
+
 if __name__ == "__main__":
     # create the BERT tokenizer
-    bert_tokenizer = BertTokenizerFast.from_pretrained("bert-base-cased")
+    bert_tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 
     # retrieve the conll2003 dataset (training + test)
     train_set_conll2003 = get_huggingface_dataset("conll2003", split="train")
-    test_set_conll2003 = get_huggingface_dataset("conll2003", split="test")
+    eval_set_conll2003 = get_huggingface_dataset("conll2003", split="validation")
 
     # encode training set and test set for the BERT model
     bert_encoded_train_set = encode_dataset(train_set_conll2003, bert_tokenizer)
-    bert_encoded_test_set  = encode_dataset(test_set_conll2003, bert_tokenizer)
+    bert_encoded_eval_set  = encode_dataset(eval_set_conll2003, bert_tokenizer)
 
     # create BERT model for token classification tasks
-    bert_model = AutoModelForTokenClassification.from_pretrained("bert-base-cased", num_labels=10)
+    bert_model = AutoModelForTokenClassification.from_pretrained("bert-base-cased", num_labels=9)
 
     # specify training arguments to pass to the trainer
     training_args = TrainingArguments(
         output_dir="bert-conll2003-test-output",
         evaluation_strategy="epoch",
-        weight_decay=0.01,
+        per_device_train_batch_size=16,
+        per_device_eval_batch_size=16,
         num_train_epochs=3,
-        learning_rate=5e-5
+        learning_rate=2e-5,
+        weight_decay=0.01
     )
+
+    metric = evaluate.load('seqeval')
+    label_names = train_set_conll2003.features['ner_tags'].feature.names
 
     # create the model trainer object
     trainer = Trainer(
         model=bert_model,
-        train_dataset=bert_encoded_train_set,
-        eval_dataset=bert_encoded_test_set,
         args=training_args,
+        train_dataset=bert_encoded_train_set,
+        eval_dataset=bert_encoded_eval_set,
+        data_collator=DataCollatorForTokenClassification(tokenizer=bert_tokenizer),
+        compute_metrics=lambda eval_prediction: compute_metrics(eval_prediction, metric, label_names),
         tokenizer=bert_tokenizer
     )
 
     # launch training phase
     trainer.train()
-
-
 

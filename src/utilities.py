@@ -25,9 +25,10 @@ def open_files(read_file, write_file):
     return input_file, output_file
 
 
-def print_percentage(x, scale):
+def print_percentage(x, scale, label=''):
     perc = x/scale * 100
-    print("\rLoading: ", end="")
+    loading = "Loading:" if label == '' else f"Loading {label}:"
+    print(f"\r{loading} ", end="")
     print("{:.1f}%".format(perc), end="")
 
 
